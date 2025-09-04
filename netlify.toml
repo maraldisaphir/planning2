@@ -1,5 +1,5 @@
 [functions]
-  node_bundler = "esbuild"
+  node_bundler = "zisi"
   external_node_modules = ["@netlify/blobs"]
 
 [[headers]]
@@ -27,4 +27,9 @@
 [[redirects]]
   from = "/api/plannings/delete"
   to = "/.netlify/functions/deletePlanning"
+  status = 200
+
+[[redirects]]
+  from = "/api/ping"
+  to = "/.netlify/functions/ping"
   status = 200

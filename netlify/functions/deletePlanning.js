@@ -1,8 +1,8 @@
 const { getStore } = require("@netlify/blobs");
 
 function store(){
-  const siteID = process.env.cc36154d-c4e0-4ede-9976-d91a0bb9b9c8;
-  const token  = process.env.nfp_JgSejZWAKbsnsCCG72Xpr6vq5CFW6A5e22a4;
+  const siteID = process.env.NETLIFY_SITE_ID;
+  const token  = process.env.NETLIFY_API_TOKEN;
   if(!siteID || !token){
     throw new Error("Missing NETLIFY_SITE_ID or NETLIFY_API_TOKEN in environment variables.");
   }
@@ -14,13 +14,14 @@ exports.handler = async (event) => {
   if (event.httpMethod !== "DELETE") return { statusCode: 405, body: "Use DELETE" };
 
   try {
-    const { key } = JSON.parse(event.body || "{}");
+    const payload = JSON.parse(event.body || "{}");
+    const key = payload && payload.key ? payload.key : null;
     if (!key) return { statusCode: 400, body: "Missing key" };
 
     const s = store();
     await s.delete(key);
     return { statusCode: 200, body: JSON.stringify({ ok: true }) };
   } catch (e) {
-    return { statusCode: 500, body: "delete error: " + String(e.message || e) };
+    return { statusCode: 500, body: "delete error: " + String(e && e.message ? e.message : e) };
   }
 };
