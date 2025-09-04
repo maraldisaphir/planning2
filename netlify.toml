@@ -3,6 +3,6 @@
   external_node_modules = ["@netlify/blobs"]
 
 [[redirects]]
-  from = "/api/diag"
-  to = "/.netlify/functions/blobDiag"
+  from = "/api/probe"
+  to = "/.netlify/functions/blobProbe"
   status = 200
