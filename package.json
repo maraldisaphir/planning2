@@ -1,7 +1,7 @@
 {
   "name": "edt-plannings",
-  "type": "module"
   "private": true,
+  "type": "module",
   "dependencies": {
     "@netlify/blobs": "^6.0.0"
   }
