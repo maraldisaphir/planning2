@@ -2,34 +2,7 @@
   node_bundler = "esbuild"
   external_node_modules = ["@netlify/blobs"]
 
-[[headers]]
-  for = "/.netlify/functions/*"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Methods = "GET, POST, DELETE, OPTIONS"
-    Access-Control-Allow-Headers = "Content-Type"
-
 [[redirects]]
-  from = "/api/plannings"
-  to = "/.netlify/functions/listPlannings"
-  status = 200
-
-[[redirects]]
-  from = "/api/plannings/save"
-  to = "/.netlify/functions/savePlanning"
-  status = 200
-
-[[redirects]]
-  from = "/api/plannings/get"
-  to = "/.netlify/functions/getPlanning"
-  status = 200
-
-[[redirects]]
-  from = "/api/plannings/delete"
-  to = "/.netlify/functions/deletePlanning"
-  status = 200
-
-[[redirects]]
-  from = "/api/ping"
-  to = "/.netlify/functions/ping"
+  from = "/api/diag"
+  to = "/.netlify/functions/blobDiag"
   status = 200
