@@ -5,7 +5,11 @@ export const handler = async (event) => {
   if (event.httpMethod !== "GET") return { statusCode: 405, body: "Use GET" };
 
   try {
-    const store = getStore("plannings");
+    const store = getStore({
+	  name: "plannings",
+	  siteID: process.env.cc36154d-c4e0-4ede-9976-d91a0bb9b9c8,
+	  token: process.env.nfp_JgSejZWAKbsnsCCG72Xpr6vq5CFW6A5e22a4,
+	});
     const items = [];
     for await (const entry of store.list({ includeMetadata: true })) {
       items.push({

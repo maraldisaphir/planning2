@@ -8,7 +8,11 @@ export const handler = async (event) => {
     const { key, data, meta } = JSON.parse(event.body || "{}");
     if (!key || !data) return { statusCode: 400, body: "Missing key or data" };
 
-    const store = getStore("plannings");
+    const store = getStore({
+	  name: "plannings",
+	  siteID: process.env.cc36154d-c4e0-4ede-9976-d91a0bb9b9c8,
+	  token: process.env.nfp_JgSejZWAKbsnsCCG72Xpr6vq5CFW6A5e22a4,
+	});
     const jsonStr = typeof data === "string" ? data : JSON.stringify(data);
 
     await store.set(key.endsWith(".json") ? key : `${key}.json`, jsonStr, {
