@@ -2,7 +2,8 @@
 
 function blobStore() {
   const { getStore } = require("@netlify/blobs");
-  return getStore("plannings", { siteID: "cc36154d-c4e0-4ede-9976-d91a0bb9b9c8", token: "nfp_JgSejZWAKbsnsCCG72Xpr6vq5CFW6A5e22a4" });
+  // Variant confirmed by your /api/probe: getStore({ name, siteID, token })
+  return getStore({ name: "plannings", siteID: "cc36154d-c4e0-4ede-9976-d91a0bb9b9c8", token: "nfp_JgSejZWAKbsnsCCG72Xpr6vq5CFW6A5e22a4" });
 }
 
 exports.handler = async (event) => {
