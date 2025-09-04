@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Plannings scolaires — Création & Consultation</title>
+  <style>
+    :root{
+      --bg:#f5f7fb; --panel:#ffffff; --muted:#5a6a80; --ink:#0a1a2f; --accent:#246bce; --line:#d7e3f3;
+      --th-bg:#f0f4fb; --th-ink:#0a1a2f; --table-border:#cddbf0; --timecol-bg:#eef3fb;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:linear-gradient(180deg,var(--bg),#eaf0fb);color:var(--ink);font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif}
+    h1,h2{margin:0 0 .5rem}
+    h1{font-size:1.6rem}
+    h2{font-size:1.2rem}
+    .app{max-width:1200px;margin:0 auto;padding:18px}
+
+    .tabs{display:flex;gap:6px}
+    .tab{border:1px solid var(--line);background:var(--panel);padding:8px 12px;border-radius:10px;cursor:pointer;user-select:none}
+    .tab[aria-selected="true"]{background:#f6f9ff;border-color:#bcd0ee}
+
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+    button,select,input[type="file"]{background:#f6f9ff;border:1px solid #c9d9f2;color:#0a1a2f;border-radius:10px;padding:8px 12px}
+    .danger{background:#ffe8e8;border-color:#caa}
+
+    .grid{display:grid;gap:14px}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+
+    label{display:grid;gap:6px;margin:8px 0}
+    input[type="text"], input[type="time"], select{
+      width:100%;background:#f8fbff;border:1px solid #c9d9f2;color:#0a1a2f;border-radius:10px;padding:8px 10px
+    }
+
+    table.timetable{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+    table.timetable th, table.timetable td{border:1px solid var(--table-border)}
+    table.timetable th{position:sticky;top:0;background:var(--th-bg);color:var(--th-ink);z-index:2}
+    table.timetable td, table.timetable th{padding:6px;vertical-align:top;background:#fff}
+    table.timetable .time-col{width:96px;text-align:center;background:var(--timecol-bg);position:sticky;left:0;z-index:1}
+
+    .slot{min-height:56px;border-radius:6px;overflow:hidden}
+    .slot-inner{padding:6px 8px;font-weight:700;letter-spacing:.3px}
+    .slot .teacher{display:block;margin-top:4px;font-weight:500;font-size:.78rem;opacity:.9}
+
+    .split{display:grid;grid-template-rows:1fr 1fr}
+    .split .half{padding:0;border-top:1px dashed rgba(0,0,0,.15)}
+    .split .half:first-child{border-top:none}
+
+    .teachers-hidden .teacher{display:none}
+
+    .name{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .name.short{display:none}
+    .compact .name.long{display:none}
+    .compact .name.short{display:inline}
+
+    .hint{color:var(--muted);font-size:.9rem}
+
+    /* Mobile-friendly tweaks */
+    #view{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .timetable{min-width:720px}
+
+    @media (max-width: 768px){
+      .app{padding:10px}
+      .card{padding:12px;border-radius:14px}
+      .tabs .tab{padding:6px 10px;border-radius:8px}
+      .toolbar button{padding:6px 10px;font-size:.9rem}
+      table.timetable th, table.timetable td{padding:4px}
+      table.timetable th{font-size:.9rem}
+      .timetable .time-col{width:72px;font-size:.85rem}
+      .slot{min-height:44px}
+      .slot-inner{padding:4px 6px}
+      .teacher{font-size:.68rem;margin-top:2px}
+      .compact .name.short{font-size:1rem;font-weight:800}
+      #filter-card{position:sticky;top:8px;z-index:10}
+    }
+    @media (max-width: 420px){
+      .timetable{min-width:620px}
+      .timetable .time-col{width:64px}
+    }
+
+    /* Fullscreen mode (for mobile) */
+    .fullscreen .topbar, .fullscreen #filter-card{display:none!important}
+    .fullscreen .app{max-width:100%;padding:8px}
+  
+    .timetable th.today-col, .timetable td.today-col{ box-shadow: inset 0 0 0 3px red; }
+    
+.hide-online{display:none !important}
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar" style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <h1>Plannings scolaires — Création & Consultation</h1>
+      <div class="tabs" role="tablist">
+        <div class="tab" role="tab" id="tab-create" aria-selected="false" onclick="switchTab('create')">Créer / Éditer</div>
+        <div class="tab" role="tab" id="tab-view" aria-selected="true" onclick="switchTab('view')">Consulter / Imprimer</div>
+      </div>
+    </div>
+
+    <!-- CREATE -->
+    <section id="panel-create" class="grid" style="display:none;margin-top:14px">
+      <div class="card">
+        <h2>1) Informations générales</h2>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <label style="flex:1 1 180px">Année scolaire
+            <input id="c-year" type="text" placeholder="ex: 2025-2026">
+          </label>
+          <label style="flex:1 1 180px">Classe
+            <input id="c-class" type="text" placeholder="ex: 4T1">
+          </label>
+          <label style="flex:2 1 280px">Nom(s) de l’élève
+            <input id="c-students" type="text" placeholder="ex: Aurore, Mathilde">
+          </label>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <label style="flex:1 1 180px">Nombre de jours
+            <select id="c-days">
+              <option value="4">4</option>
+              <option value="5" selected>5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+            </select>
+          </label>
+          <label style="flex:2 1 280px">Nom des jours (laisser vide pour défaut Lun→Dim)
+            <input id="c-daynames" type="text" placeholder="ex: Lundi,Mardi,Mercredi,Jeudi,Vendredi">
+          </label>
+          <label style="flex:2 1 280px"><input id="c-parity" type="checkbox"> Planning différent en semaines paires/impaires</label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2) Heures</h2>
+        <div class="toolbar">
+          <button onclick="addPeriod()">+ Ajouter une heure</button>
+          <button onclick="genPeriods()">⚙️ Générer automatiquement</button>
+        </div>
+        <div id="periods"></div>
+      </div>
+
+      <div class="card">
+        <h2>3) Matières</h2>
+        <div id="subjects" class="grid"></div>
+        <div class="toolbar">
+          <button onclick="addSubjectPrompt()">+ Ajouter une matière</button>
+          <button onclick="resetDefaultSubjects()">↺ Liste par défaut</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>4) Saisie du planning</h2>
+        <div class="hint">Cliquez dans chaque case pour choisir la matière et (optionnel) le prof. Si Pair/Impair est coché, vous aurez 2 champs par case.</div>
+        <div id="editor" class="grid"></div>
+      </div>
+
+      <div class="card">
+        <h2>5) Enregistrer</h2>
+        <div class="toolbar">
+          <button onclick="saveSchedule()">💾 Enregistrer dans le navigateur</button>
+          <button onclick="exportScheduleJSON()">⬇️ Exporter en JSON</button>
+          <label>Importer un JSON <input type="file" accept="application/json" onchange="importScheduleJSON(event)"></label>
+        </div>
+        <div id="save-msg" class="hint"></div>
+      </div>
+    
+      <div class="card">
+        <h2>6) Enregistrer en ligne (Netlify Blobs)</h2>
+        <div class="hint">Donne un nom de fichier (ex: <em>2025-2026_4T1_Aurore</em>) puis clique sur « Enregistrer en ligne ». Tous les visiteurs verront la liste ci-dessous.</div>
+        <div class="toolbar" style="align-items:center;gap:8px;flex-wrap:wrap">
+          <input id="cloudName" placeholder="Nom du planning (sans .json)" style="min-width:260px" />
+          <button id="btnSaveCloud" type="button">☁️ Enregistrer en ligne</button>
+          <button id="btnRefreshCloud" type="button">↻ Recharger la liste</button>
+        </div>
+        <div id="cloudMsg" class="hint"></div>
+        <ul id="cloudList" style="margin-top:8px"></ul>
+      </div>
+    </section>
+
+    <!-- VIEW -->
+    <section id="panel-view" class="grid" style="margin-top:14px">
+      <div class="card" id="filter-card">
+        <h2>Filtrer</h2>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <label style="flex:1 1 180px">Année
+            <select id="v-year" onchange="populateClasses()"></select>
+          </label>
+          <label style="flex:1 1 180px">Classe
+            <select id="v-class" onchange="populateStudents()"></select>
+          </label>
+          <label style="flex:1 1 180px">Élève
+            <select id="v-student" onchange="renderView()"></select>
+          </label>
+          <label style="flex:1 1 180px">Semaine
+            <select id="v-mode" onchange="renderView()">
+              <option value="pair">Pair</option>
+              <option value="impair">Impair</option>
+              <option value="pi">P & I (cellule divisée)</option>
+            </select>
+          </label>
+          <label style="display:flex;align-items:end;gap:8px"><input id="v-show-teachers" type="checkbox" checked onchange="toggleTeachers(this.checked)"> Afficher les profs</label>
+        
+          <label class="hide-online" style="flex:1 1 240px">Plannings en ligne
+            <select id="v-online" onchange="loadOnlinePlanning(this.value)">
+              <option value="">(choisir un planning en ligne)</option>
+            </select>
+          </label>
+</div>
+        <div class="toolbar"><div id="date-week" class="hint"></div><button onclick="window.print()">🖨️ Imprimer</button><button onclick="toggleFullscreen()">⤢ Plein écran</button><button class="danger" onclick="deleteCurrentSchedule()">🗑️ Supprimer ce planning</button><button class="danger" onclick="clearLocalDB()">🧹 Vider la base locale</button></div>
+      </div>
+      <div class="card"><div id="view"></div></div>
+    </section>
+  </div>
+
+  <script>
+    // ===== Utils =====
+    const $ = function(sel){ return document.querySelector(sel); };
+    const $$ = function(sel){ return Array.from(document.querySelectorAll(sel)); };
+    const uid = function(){ return Math.random().toString(36).slice(2,10); };
+
+    function currentSchoolYearLabel(){
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = now.getMonth();
+      return (m>=8) ? y + '-' + (y+1) : (y-1) + '-' + y;
+    }
+    function isoWeek(d){
+      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const dayNum = (date.getUTCDay() + 6) % 7;
+      date.setUTCDate(date.getUTCDate() - dayNum + 3);
+      const firstThursday = new Date(Date.UTC(date.getUTCFullYear(),0,4));
+      const week = 1 + Math.round(((date - firstThursday) / 86400000 - 3 + ((firstThursday.getUTCDay()+6)%7)) / 7);
+      return week;
+    }
+    function weekParity(d){ return (isoWeek(d||new Date()) % 2 === 0) ? 'pair' : 'impair'; }
+    function textColorFor(bg){
+      try{
+        const c = bg.replace('#','');
+        const r=parseInt(c.slice(0,2),16), g=parseInt(c.slice(2,4),16), b=parseInt(c.slice(4,6),16);
+        const lum = 0.2126*r + 0.7152*g + 0.0722*b;
+        return lum > 150 ? '#000' : '#fff';
+      }catch(e){ return '#000'; }
+    }
+    function fmtDateFr(d){ return d.toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); }
+
+    // ===== Defaults =====
+    const DEFAULT_SUBJECTS = [
+      ['MATHÉMATIQUES','#2ecc71','', 'MATHS'],
+      ['FRANÇAIS','#3498db','', 'FR'],
+      ['ALLEMAND','#9b59b6','', 'DE'],
+      ['ANGLAIS','#16a085','', 'EN'],
+      ['HISTOIRE GÉOGRAPHIE','#e67e22','', 'HG'],
+      ['SVT','#1abc9c','', 'SVT'],
+      ['PHYSIQUE-CHIMIE','#8e44ad','', 'PC'],
+      ['TECHNOLOGIE','#2c3e50','', 'TECH'],
+      ['EPS','#e74c3c','', 'EPS'],
+      ['PE','#c0392b','', 'PE'],
+      ['VIE DE CLASSE','#7f8c8d','', 'VDC'],
+      ['RELIGION','#a0522d','', 'REL'],
+      ['LATIN','#d35400','', 'LAT'],
+      ['MUSIQUE','#2980b9','', 'MUS'],
+      ['ARTS PLASTIQUES','#95a5a6','', 'ARTS'],
+      ['PAUSE','#34495e','', 'PAUSE']
+    ];
+
+    // ===== Model & prefs =====
+    var model = {
+      id: uid(),
+      year: currentSchoolYearLabel(),
+      className: '',
+      students: [],
+      days: ['Lundi','Mardi','Mercredi','Jeudi','Vendredi'],
+      periods: [
+        {start:'08:00',end:'08:55'},
+        {start:'09:00',end:'09:55'},
+        {start:'10:05',end:'11:00'},
+        {start:'11:05',end:'12:00'},
+        {start:'12:05',end:'12:50'},
+        {start:'12:55',end:'13:40'},
+        {start:'13:45',end:'14:40'},
+        {start:'14:45',end:'15:40'},
+        {start:'15:50',end:'16:45'}
+      ],
+      hasParity: false,
+      subjects: {},
+      subjectOrder: [],
+      cells: []
+    };
+
+    var DB_KEY = 'edt_db_v1';
+    var PREF_KEY = 'edt_prefs_v1';
+    function loadDB(){ try{ return JSON.parse(localStorage.getItem(DB_KEY)) || {schedules:[]}; }catch(e){ return {schedules:[]}; } }
+    function saveDB(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+    function loadPrefs(){ try{ return JSON.parse(localStorage.getItem(PREF_KEY)) || {showTeachers:true}; }catch(e){ return {showTeachers:true}; } }
+    function savePrefs(p){ localStorage.setItem(PREF_KEY, JSON.stringify(p)); }
+    var prefs = loadPrefs();
+
+    function initDefaultSubjects(){
+      model.subjects = {}; model.subjectOrder = [];
+      for(var i=0;i<DEFAULT_SUBJECTS.length;i++){
+        var arr = DEFAULT_SUBJECTS[i];
+        var id = uid();
+        model.subjects[id] = {id:id, name:arr[0], short:arr[3]||'', color:arr[1], teacherDefault:arr[2]||''};
+        model.subjectOrder.push(id);
+      }
+    }
+    function ensureCells(){
+      var blank = function(){ return {pair:{subjectId:'',teacher:''}, impair:{subjectId:'',teacher:''}}; };
+      var D = model.days.length;
+      var P = model.periods.length;
+      if(!Array.isArray(model.cells)) model.cells = [];
+      if(model.cells.length > D) model.cells = model.cells.slice(0,D);
+      for(var d=0; d<D; d++){
+        if(!Array.isArray(model.cells[d])) model.cells[d] = [];
+        if(model.cells[d].length > P) model.cells[d] = model.cells[d].slice(0,P);
+        for(var p=0; p<P; p++){
+          if(!model.cells[d][p]) model.cells[d][p] = blank();
+          var c = model.cells[d][p];
+          if(!c.pair) c.pair = {subjectId:'',teacher:''};
+          if(!c.impair) c.impair = {subjectId:'',teacher:''};
+        }
+      }
+    }
+
+    // ===== Create bindings =====
+    function bindModelToCreateUI(){
+      $('#c-year').value = model.year;
+      $('#c-class').value = model.className;
+      $('#c-students').value = (model.students||[]).join(', ');
+      $('#c-parity').checked = !!model.hasParity;
+      $('#c-days').value = String(model.days.length);
+      $('#c-daynames').value = '';
+      renderPeriods(); renderSubjects(); buildEditor();
+    }
+
+    $('#c-year').addEventListener('change', function(e){ model.year = e.target.value.trim(); });
+    $('#c-class').addEventListener('change', function(e){ model.className = e.target.value.trim(); });
+    $('#c-students').addEventListener('change', function(e){ model.students = e.target.value.split(',').map(function(s){return s.trim();}).filter(Boolean); });
+    $('#c-parity').addEventListener('change', function(e){ model.hasParity = e.target.checked; buildEditor(); });
+    $('#c-days').addEventListener('change', function(e){ var n = parseInt(e.target.value,10); var def=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche']; model.days = def.slice(0,n); ensureCells(); buildEditor(); });
+    $('#c-daynames').addEventListener('change', function(e){ var names = e.target.value.split(',').map(function(s){return s.trim();}).filter(Boolean); if(names.length){ model.days = names; ensureCells(); buildEditor(); }});
+
+    function renderPeriods(){
+      var host = $('#periods'); host.innerHTML = '';
+      for(var i=0;i<model.periods.length;i++){
+        var p = model.periods[i];
+        var row = document.createElement('div'); row.style.display='flex'; row.style.gap='12px'; row.style.alignItems='end';
+        row.innerHTML = '<label style="flex:1">Début<input type="time" value="'+p.start+'" data-i="'+i+'" data-k="start"></label>'+
+                        '<label style="flex:1">Fin<input type="time" value="'+p.end+'" data-i="'+i+'" data-k="end"></label>'+
+                        '<div style="display:flex;gap:6px">'+
+                          '<button onclick="movePeriod('+i+',-1)">↑</button>'+
+                          '<button onclick="movePeriod('+i+',1)">↓</button>'+
+                          '<button class="danger" onclick="deletePeriod('+i+')">Supprimer</button>'+
+                        '</div>';
+        host.appendChild(row);
+      }
+      host.onchange = function(e){
+        if(e.target && e.target.matches('input[type="time"]')){
+          var i = +e.target.getAttribute('data-i');
+          var k = e.target.getAttribute('data-k');
+          model.periods[i][k] = e.target.value;
+          ensureCells(); buildEditor();
+        }
+      };
+    }
+    function addPeriod(){ model.periods.push({start:'16:50',end:'17:45'}); ensureCells(); renderPeriods(); buildEditor(); }
+    function movePeriod(i,dir){ var j=i+dir; if(j<0||j>=model.periods.length) return; var t=model.periods[i]; model.periods[i]=model.periods[j]; model.periods[j]=t; ensureCells(); renderPeriods(); buildEditor(); }
+    function deletePeriod(i){ if(model.periods.length<=1) return; model.periods.splice(i,1); ensureCells(); renderPeriods(); buildEditor(); }
+    function genPeriods(){ model.periods=[{start:'08:00',end:'08:55'},{start:'09:00',end:'09:55'},{start:'10:05',end:'11:00'},{start:'11:05',end:'12:00'},{start:'12:05',end:'12:50'},{start:'12:55',end:'13:40'},{start:'13:45',end:'14:40'},{start:'14:45',end:'15:40'},{start:'15:50',end:'16:45'}]; ensureCells(); renderPeriods(); buildEditor(); }
+
+    function renderSubjects(){
+      var host = $('#subjects'); host.innerHTML='';
+      for(var x=0; x<model.subjectOrder.length; x++){
+        var id = model.subjectOrder[x]; var s = model.subjects[id];
+        var row = document.createElement('div'); row.style.display='grid'; row.style.gridTemplateColumns='1fr 120px 1fr 1fr 80px'; row.style.gap='8px'; row.style.alignItems='center';
+        row.innerHTML = '<input class="subject-name" value="'+s.name+'" data-id="'+id+'">'+
+                        '<input type="color" value="'+s.color+'" data-id="'+id+'" data-k="color">'+
+                        '<input class="short-name" placeholder="Nom court" value="'+(s.short||'')+'" data-id="'+id+'">'+
+                        '<input class="teacher-name" placeholder="Prof (défaut)" value="'+(s.teacherDefault||'')+'" data-id="'+id+'">'+
+                        '<button class="danger" onclick="deleteSubject(\''+id+'\')">Suppr</button>';
+        host.appendChild(row);
+      }
+      host.oninput = function(e){
+        if(!e.target) return;
+        if(e.target.matches('input.subject-name')){ var id=e.target.getAttribute('data-id'); model.subjects[id].name=e.target.value.toUpperCase(); buildEditor(); renderView(); }
+        if(e.target.matches('input[type="color"][data-k="color"]')){ var idc=e.target.getAttribute('data-id'); model.subjects[idc].color=e.target.value; buildEditor(); renderView(); }
+        if(e.target.matches('input.teacher-name')){ var idt=e.target.getAttribute('data-id'); model.subjects[idt].teacherDefault=e.target.value; buildEditor(); renderView(); }
+        if(e.target.matches('input.short-name')){ var ids=e.target.getAttribute('data-id'); model.subjects[ids].short=e.target.value.toUpperCase(); buildEditor(); renderView(); }
+      };
+    }
+    function addSubjectPrompt(){ var name=prompt('Nom de la matière'); if(!name) return; var id=uid(); model.subjects[id]={id:id,name:name.toUpperCase(),short:'',color:'#3b82f6',teacherDefault:''}; model.subjectOrder.push(id); renderSubjects(); buildEditor(); }
+    function deleteSubject(id){ if(!confirm('Supprimer cette matière ?')) return; delete model.subjects[id]; model.subjectOrder=model.subjectOrder.filter(function(x){return x!==id;}); for(var d=0; d<model.cells.length; d++){ for(var p=0; p<model.cells[d].length; p++){ if(model.cells[d][p].pair.subjectId===id) model.cells[d][p].pair={subjectId:'',teacher:''}; if(model.cells[d][p].impair.subjectId===id) model.cells[d][p].impair={subjectId:'',teacher:''}; }} renderSubjects(); buildEditor(); }
+    function resetDefaultSubjects(){ if(!confirm('Remplacer par la liste par défaut ?')) return; initDefaultSubjects(); buildEditor(); renderSubjects(); }
+
+    function buildEditor(){
+      var host = $('#editor'); host.innerHTML=''; ensureCells();
+      var table = document.createElement('table'); table.className='timetable';
+      var thead = document.createElement('thead'); var trh = document.createElement('tr');
+      trh.innerHTML = '<th style="width:120px">Heure</th>' + model.days.map(function(d){return '<th>'+d+'</th>';}).join('');
+      thead.appendChild(trh); table.appendChild(thead);
+      var tbody = document.createElement('tbody');
+      for(var pi=0; pi<model.periods.length; pi++){
+        var p = model.periods[pi]; var tr = document.createElement('tr');
+        tr.innerHTML = '<th>'+p.start+'<br>→ '+p.end+'</th>';
+        for(var di=0; di<model.days.length; di++){
+          var cell = model.cells[di][pi]; var td=document.createElement('td'); td.appendChild(buildEditorCell(di,pi,cell)); tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody); host.appendChild(table);
+    }
+
+    
+function buildEditorCell(di,pi,cell){
+  var wrap = document.createElement('div');
+  var options = ['<option value="">(vide)</option>']
+    .concat(model.subjectOrder.map(function(id){ return '<option value="'+id+'">'+model.subjects[id].name+'</option>'; }))
+    .join('');
+
+  if(model.hasParity){
+    wrap.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">\
+      <div><div class="hint">Pair</div><select data-di="'+di+'" data-pi="'+pi+'" data-which="pair" class="sel-subj">'+options+'</select>\
+      <input type="text" placeholder="Prof (défaut)" class="inp-teach" data-di="'+di+'" data-pi="'+pi+'" data-which="pair"></div>\
+      <div><div class="hint">Impair</div><select data-di="'+di+'" data-pi="'+pi+'" data-which="impair" class="sel-subj">'+options+'</select>\
+      <input type="text" placeholder="Prof (défaut)" class="inp-teach" data-di="'+di+'" data-pi="'+pi+'" data-which="impair"></div>\
+    </div>';
+    wrap.querySelector('select.sel-subj[data-which="pair"]').value = cell.pair.subjectId || '';
+    wrap.querySelector('select.sel-subj[data-which="impair"]').value = cell.impair.subjectId || '';
+    wrap.querySelector('input.inp-teach[data-which="pair"]').value = cell.pair.teacher || '';
+    wrap.querySelector('input.inp-teach[data-which="impair"]').value = cell.impair.teacher || '';
+  } else {
+    wrap.innerHTML = '<select data-di="'+di+'" data-pi="'+pi+'" data-which="both" class="sel-subj">'+options+'</select>\
+    <input type="text" placeholder="Prof (défaut)" class="inp-teach" data-di="'+di+'" data-pi="'+pi+'" data-which="both">';
+    var id = cell.pair.subjectId || cell.impair.subjectId || '';
+    var tch = cell.pair.teacher || cell.impair.teacher || '';
+    wrap.querySelector('select.sel-subj').value = id;
+    wrap.querySelector('input.inp-teach').value = tch;
+  }
+
+  wrap.addEventListener('change', function(e){
+    if(e.target && e.target.matches('select.sel-subj')){
+      var di2=+e.target.getAttribute('data-di');
+      var pi2=+e.target.getAttribute('data-pi');
+      var which=e.target.getAttribute('data-which');
+      var newId=e.target.value;
+
+      if(which==='both'){
+        model.cells[di2][pi2].pair.subjectId = newId;
+        model.cells[di2][pi2].impair.subjectId = newId;
+      } else {
+        model.cells[di2][pi2][which].subjectId = newId;
+      }
+
+      var subjNew = model.subjects[newId] || null;
+      var newDef = (subjNew && subjNew.teacherDefault) ? subjNew.teacherDefault : '';
+
+      function forceUpdate(side){
+        model.cells[di2][pi2][side].teacher = newDef;
+        var input = wrap.querySelector('input.inp-teach[data-which="'+(model.hasParity?side:'both')+'"]');
+        if(input) input.value = newDef;
+      }
+
+      if(which==='both'){
+        forceUpdate('pair');
+        forceUpdate('impair');
+      } else {
+        forceUpdate(which);
+      }
+    }
+
+    if(e.target && e.target.matches('input.inp-teach')){
+      var di3=+e.target.getAttribute('data-di');
+      var pi3=+e.target.getAttribute('data-pi');
+      var which2=e.target.getAttribute('data-which');
+      var v=e.target.value;
+      if(which2==='both'){
+        model.cells[di3][pi3].pair.teacher = v;
+        model.cells[di3][pi3].impair.teacher = v;
+      } else {
+        model.cells[di3][pi3][which2].teacher = v;
+      }
+    }
+  });
+  return wrap;
+}
+
+    // ===== Save/Load =====
+
+// Charge automatiquement TOUS les plannings en ligne depuis plannings.json (aucun choix manuel)
+async function loadAllPlanningsFromManifest(){
+  try{
+    const res = await fetch('./plannings.json?ts='+Date.now(), {cache:'no-cache'});
+    if(!res.ok) throw new Error('plannings.json introuvable');
+    const data = await res.json();
+
+    // 1) Déjà combiné
+    if(data && Array.isArray(data.schedules)){
+      schedules = data.schedules;
+      saveDB({schedules: schedules});
+      populateYears(); populateClasses(); populateStudents(); renderView();
+      return;
+    }
+
+    // 2) Liste d'items à charger
+    const items = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : []);
+    if(!items.length){ throw new Error('Aucun planning listé'); }
+
+    let all = [];
+    for(const it of items){
+      if(!it || !it.url) continue;
+      const abs = new URL(it.url, location.href).href;
+      const r = await fetch(abs, {cache:'no-cache'});
+      if(!r.ok) { console.warn('Échec fetch', abs, r.status); continue; }
+      const j = await r.json();
+      if(j && Array.isArray(j.schedules)){
+        all = all.concat(j.schedules);
+      } else if (j && typeof j === 'object'){
+        // Un seul planning à la racine
+        all.push(j);
+      } else if (Array.isArray(j)){
+        // Array direct de plannings
+        all = all.concat(j);
+      } else {
+        console.warn('Format non reconnu pour', abs);
+      }
+    }
+
+    if(!all.length) throw new Error('Aucun planning valide trouvé');
+
+    schedules = all;
+    saveDB({schedules: schedules});
+    populateYears(); populateClasses(); populateStudents(); renderView();
+  }catch(err){
+    alert('Chargement auto des plannings en ligne impossible: '+ err.message);
+  }
+}
+
+// Remplace l'ancien démarrage par le chargement auto
+window.addEventListener('DOMContentLoaded', function(){
+  loadAllPlanningsFromManifest();
+});
+
+
+
+
+
+    function saveSchedule(){
+      var db = loadDB();
+      model.year = $('#c-year').value.trim() || currentSchoolYearLabel();
+      model.className = $('#c-class').value.trim();
+      model.students = $('#c-students').value.split(',').map(function(s){return s.trim();}).filter(Boolean);
+      if(!model.className){ msg('save-msg','❗ Classe requise.'); return; }
+      if(model.students.length===0){ msg('save-msg','❗ Au moins un élève.'); return; }
+      var idx = db.schedules.findIndex(function(s){ return s.id===model.id; });
+      if(idx>=0) db.schedules[idx] = JSON.parse(JSON.stringify(model)); else db.schedules.push(JSON.parse(JSON.stringify(model)));
+      saveDB(db);
+      msg('save-msg','✅ Planning enregistré.');
+      populateYears();
+    }
+    function exportScheduleJSON(viewOnly){
+      var db = loadDB(); var data = null;
+      if(viewOnly){ var s=getSelectedSchedule(); if(!s){ alert('Aucun planning sélectionné.'); return; } data=s; }
+      else { data = JSON.parse(JSON.stringify(model)); }
+      var blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+      var a=document.createElement('a');
+      var y = (viewOnly? data.year : model.year)||'year';
+      var c = (viewOnly? data.className : model.className)||'classe';
+      a.download = 'planning_'+y+'_'+c+'.json';
+      a.href = URL.createObjectURL(blob);
+      a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 5000);
+    }
+    function importScheduleJSON(ev){
+      var file = ev.target.files && ev.target.files[0]; if(!file) return;
+      var reader = new FileReader();
+      reader.onload = function(){
+        try{
+          var data = JSON.parse(reader.result);
+          if(!data || !data.periods || !data.days || !data.cells){ alert('Fichier invalide'); return; }
+          if(data.subjects){ for(var id in data.subjects){ if(data.subjects.hasOwnProperty(id)){ data.subjects[id].short = data.subjects[id].short || ''; } } }
+          model = data; // garde les cellules existantes
+          ensureCells();
+          bindModelToCreateUI();
+          msg('save-msg','✅ JSON importé. Cliquez « Enregistrer dans le navigateur » pour l’ajouter à la base.');
+        }catch(e){ alert('JSON invalide: '+e.message); }
+      };
+      reader.readAsText(file);
+    }
+    function msg(id,txt){ var el=document.getElementById(id); if(el) el.textContent=txt; }
+
+    // ===== View side =====
+    function getSelectedSchedule(){ var year=$('#v-year').value; var cls=$('#v-class').value; var stu=$('#v-student').value; var db=loadDB(); return db.schedules.find(function(s){ return s.year===year && s.className===cls && (s.students||[]).indexOf(stu)>=0; }); }
+    function populateYears(){ var db=loadDB(); var years=[].concat(Array.from(new Set(db.schedules.map(function(s){return s.year;})))).sort(); var sel=$('#v-year'); sel.innerHTML=years.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join(''); var cur=currentSchoolYearLabel(); sel.value=years.indexOf(cur)>=0?cur:(years[0]||''); populateClasses(); }
+    function populateClasses(){ var db=loadDB(); var y=$('#v-year').value; var classes=[].concat(Array.from(new Set(db.schedules.filter(function(s){return s.year===y;}).map(function(s){return s.className;})))).sort(); var sel=$('#v-class'); sel.innerHTML=classes.map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join(''); $('#v-class').value=classes[0]||''; populateStudents(); }
+    function populateStudents(){ var db=loadDB(); var y=$('#v-year').value; var c=$('#v-class').value; var students=[].concat(Array.from(new Set(db.schedules.filter(function(s){return s.year===y && s.className===c;}).reduce(function(acc,s){ return acc.concat(s.students||[]); },[])))).sort(); var sel=$('#v-student'); sel.innerHTML=students.map(function(n){return '<option value="'+n+'">'+n+'</option>';}).join(''); $('#v-student').value=students[0]||''; renderView(); }
+
+    function toggleTeachers(show){ prefs.showTeachers=!!show; savePrefs(prefs); renderView(); }
+
+    function highlightTodayColumn(table, s){
+      var dow = new Date().getDay();
+      var dayIdx = dow - 1;
+      if(dayIdx < 0 || !s || !s.days || dayIdx >= s.days.length) return;
+      var colIndex = 1 + dayIdx;
+      if(table.tHead && table.tHead.rows.length){
+        var hcell = table.tHead.rows[0].cells[colIndex];
+        if(hcell) hcell.classList.add('today-col');
+      }
+      var tb = table.tBodies && table.tBodies[0];
+      if(!tb) return;
+      for(var r=0; r<tb.rows.length; r++){
+        var c = tb.rows[r].cells[colIndex];
+        if(c) c.classList.add('today-col');
+      }
+    }
+
+    function renderView(){
+      var wrap=$('#view'); wrap.innerHTML=''; var s=getSelectedSchedule(); if(!s){ wrap.innerHTML='<div class="hint">Aucun planning.</div>'; return; }
+      var mode=$('#v-mode').value; // pair/impair/pi
+      var now=new Date(); $('#date-week').textContent=fmtDateFr(now)+' — Semaine '+isoWeek(now);
+
+      var table=document.createElement('table'); table.className='timetable';
+      var thead=document.createElement('thead'); var trh=document.createElement('tr'); trh.innerHTML='<th class="time-col">Heure</th>'+s.days.map(function(d){return '<th>'+d+'</th>';}).join(''); thead.appendChild(trh); table.appendChild(thead);
+      var tbody=document.createElement('tbody');
+
+      for(var p=0; p<s.periods.length; p++){
+        var tr=document.createElement('tr'); tr.innerHTML='<th class="time-col">'+s.periods[p].start+'<br>→ '+s.periods[p].end+'</th>';
+        for(var d=0; d<s.days.length; d++){
+          var td=document.createElement('td');
+          var cell=s.cells[d][p]; var pair=cell.pair||{subjectId:'',teacher:''}; var impair=cell.impair||{subjectId:'',teacher:''};
+          var subjP=s.subjects[pair.subjectId]; var subjI=s.subjects[impair.subjectId];
+          var show=prefs.showTeachers;
+          function renderSimple(subj, teacher){
+            if(!subj){ td.innerHTML='<div class="slot"><div class="slot-inner" style="opacity:.35">&nbsp;</div></div>'; return; }
+            var color=subj.color||'#3b82f6'; var ink=textColorFor(color); var long=(subj.name||'').toUpperCase(); var short=(subj.short||long).toUpperCase();
+            td.innerHTML='<div class="slot"><div class="slot-inner" style="background:'+color+';color:'+ink+'">'+
+              '<span class="name long">'+long+'</span><span class="name short">'+short+'</span>'+
+              '<span class="teacher">'+(show?(teacher||''):'')+'</span>'+
+            '</div></div>';
+          }
+          if(mode==='pair'){
+            if(pair.subjectId){ renderSimple(subjP, (pair.teacher|| (subjP&&subjP.teacherDefault) || '')); }
+            else if(impair.subjectId){ renderSimple(subjI, (impair.teacher|| (subjI&&subjI.teacherDefault) || '')); }
+            else { renderSimple(null,''); }
+          } else if(mode==='impair'){
+            if(impair.subjectId){ renderSimple(subjI, (impair.teacher|| (subjI&&subjI.teacherDefault) || '')); }
+            else if(pair.subjectId){ renderSimple(subjP, (pair.teacher|| (subjP&&subjP.teacherDefault) || '')); }
+            else { renderSimple(null,''); }
+          }
+          else {
+            if(pair.subjectId===impair.subjectId && ((pair.teacher||'')===(impair.teacher||''))){ renderSimple(subjP, pair.teacher||subjP&&subjP.teacherDefault||''); }
+            else {
+              var colorP=subjP&&subjP.color||'#3b82f6'; var colorI=subjI&&subjI.color||'#6b7280';
+              var inkP=textColorFor(colorP); var inkI=textColorFor(colorI);
+              var longP=subjP&&subjP.name ? subjP.name.toUpperCase() : ''; var shortP=subjP&&subjP.short ? subjP.short.toUpperCase() : longP;
+              var longI=subjI&&subjI.name ? subjI.name.toUpperCase() : ''; var shortI=subjI&&subjI.short ? subjI.short.toUpperCase() : longI;
+              td.innerHTML='<div class="slot split">'+
+                '<div class="half" style="background:'+colorP+';color:'+inkP+'"><div class="slot-inner"><span class="name long">'+longP+'</span><span class="name short">'+shortP+'</span><span class="teacher">'+(show?(pair.teacher||''):'')+'</span></div></div>'+
+                '<div class="half" style="background:'+colorI+';color:'+inkI+'"><div class="slot-inner"><span class="name long">'+longI+'</span><span class="name short">'+shortI+'</span><span class="teacher">'+(show?(impair.teacher||''):'')+'</span></div></div>'+
+              '</div>';
+            }
+          }
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody); wrap.appendChild(table);
+
+      highlightTodayColumn(table, s);
+      wrap.classList.toggle('teachers-hidden', !prefs.showTeachers);
+      updateCompact();
+    }
+
+    function isCompact(){ var th=document.querySelector('.timetable thead th:not(.time-col)'); if(!th) return false; return th.clientWidth<140; }
+    function updateCompact(){ var wrap=$('#view'); wrap.classList.toggle('compact', isCompact()); }
+    window.addEventListener('resize', function(){ updateCompact(); });
+
+    // ===== Tabs =====
+    function switchTab(which){ var c=(which==='create'); $('#panel-create').style.display=c?'grid':'none'; $('#panel-view').style.display=c?'none':'grid'; $('#tab-create').setAttribute('aria-selected', c? 'true':'false'); $('#tab-view').setAttribute('aria-selected', (!c)? 'true':'false'); if(!c){ populateYears(); $('#v-mode').value = weekParity(new Date()); renderView(); } }
+
+    function deleteCurrentSchedule(){
+      var s=getSelectedSchedule(); if(!s){ alert('Aucun planning sélectionné.'); return; }
+      if(!confirm('Supprimer ce planning ('+s.year+' / '+s.className+') ?')) return;
+      var db=loadDB(); db.schedules = db.schedules.filter(function(x){ return x.id!==s.id; }); saveDB(db);
+      populateYears(); document.getElementById('view').innerHTML = '<div class="hint">Planning supprimé.</div>';
+    }
+    function clearLocalDB(){
+      if(!confirm('Vider TOUTE la base locale (tous les plannings) ?')) return;
+      localStorage.removeItem(DB_KEY);
+      populateYears(); document.getElementById('view').innerHTML = '<div class="hint">Base locale vidée.</div>';
+    }
+
+    function toggleFullscreen(){ document.body.classList.toggle('fullscreen'); updateCompact(); }
+
+    // ===== Init =====
+    (function init(){
+      initDefaultSubjects(); ensureCells(); bindModelToCreateUI();
+      $('#v-show-teachers').checked = !!prefs.showTeachers;
+      switchTab('view');
+    })();
+  
+    // ===== Cloud (Netlify Blobs via Functions) =====
+    async function getCurrentPlanningJson(){
+      // renvoie le modèle courant si on est sur l'onglet créer, sinon le planning sélectionné
+      try {
+        // copie profonde du modèle (objet édité)
+        const data = JSON.parse(JSON.stringify(model));
+        return data;
+      } catch (e) {
+        console.error(e);
+        return null;
+      }
+    }
+
+    async function loadPlanningIntoApp(json){
+      // accepte soit un objet "planning", soit {schedules:[...]}
+      const db = loadDB();
+      const toAdd = [];
+      if(json && Array.isArray(json.schedules)){
+        toAdd.push(...json.schedules);
+      } else if (json && typeof json === 'object' && json.periods){
+        toAdd.push(json);
+      }
+      if(!toAdd.length) throw new Error('Format non reconnu');
+
+      // merge (remplace si même id)
+      toAdd.forEach(s => {
+        const idx = db.schedules.findIndex(x => x.id === s.id);
+        if(idx >= 0){ db.schedules[idx] = s; } else { db.schedules.push(s); }
+      });
+      saveDB(db);
+      populateYears();
+      populateClasses();
+      populateStudents();
+      renderView();
+    }
+
+    function showCloudMsg(msg, ok=true){
+      const el = document.getElementById('cloudMsg');
+      el.style.color = ok ? 'green' : 'crimson';
+      el.textContent = msg;
+      clearTimeout(window.__cloudMsgTimer);
+      window.__cloudMsgTimer = setTimeout(()=>{ el.textContent = ''; }, 4000);
+    }
+
+    async function savePlanningToCloud(){
+      const name = document.getElementById('cloudName').value.trim();
+      if(!name){ showCloudMsg('Donne un nom de fichier 😉', false); return; }
+      const data = await getCurrentPlanningJson();
+      if(!data){ showCloudMsg('Rien à enregistrer', false); return; }
+
+      try{
+        const resp = await fetch('/api/plannings/save', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ key: name.endsWith('.json') ? name : name + '.json', data, meta: { author: 'edt-app' } })
+        });
+        if(!resp.ok){
+          const t = await resp.text();
+          throw new Error(t || ('HTTP ' + resp.status));
+        }
+        showCloudMsg('Planning enregistré en ligne ✅');
+        await refreshCloudList();
+      }catch(e){
+        console.error(e);
+        showCloudMsg('Erreur: ' + e.message, false);
+      }
+    }
+
+    async function refreshCloudList(){
+      const ul = document.getElementById('cloudList');
+      if(!ul) return;
+      ul.innerHTML = '<li>Chargement…</li>';
+      try{
+        const resp = await fetch('/api/plannings');
+        const items = resp.ok ? await resp.json() : [];
+        if(!items.length){ ul.innerHTML = '<li>Aucun planning en ligne pour le moment</li>'; return; }
+        ul.innerHTML = '';
+        items.forEach(it => {
+          const li = document.createElement('li');
+          const niceDate = it.updatedAt ? new Date(it.updatedAt).toLocaleString('fr-FR') : '';
+          li.innerHTML = \`
+            <strong>\${it.key}</strong>
+            <small style="color:#666">(\${niceDate})</small>
+            &nbsp;
+            <button data-k="\${it.key}" class="cloud-load">Charger</button>
+            <a href="/api/plannings/get?key=\${encodeURIComponent(it.key)}" target="_blank">Télécharger</a>
+            <button data-k="\${it.key}" class="cloud-del" style="margin-left:6px;color:#900">Supprimer</button>
+          \`;
+          ul.appendChild(li);
+        });
+        // bind
+        ul.querySelectorAll('.cloud-load').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const key = e.target.getAttribute('data-k');
+            const r = await fetch('/api/plannings/get?key=' + encodeURIComponent(key));
+            if(!r.ok){ showCloudMsg('Impossible de charger', false); return; }
+            const json = await r.json();
+            try{
+              await loadPlanningIntoApp(json);
+              showCloudMsg('Planning chargé ✅');
+            }catch(err){
+              console.error(err);
+              showCloudMsg('Erreur à l\'application du planning', false);
+            }
+          });
+        });
+        ul.querySelectorAll('.cloud-del').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const key = e.target.getAttribute('data-k');
+            if(!confirm('Supprimer ' + key + ' ?')) return;
+            const resp = await fetch('/api/plannings/delete', {
+              method: 'DELETE',
+              headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({ key })
+            });
+            if(!resp.ok){ showCloudMsg('Suppression impossible', false); return; }
+            showCloudMsg('Supprimé ✅');
+            refreshCloudList();
+          });
+        });
+      }catch(e){
+        console.error(e);
+        ul.innerHTML = '<li>Erreur de chargement</li>';
+      }
+    }
+
+    // brancher les boutons
+    window.addEventListener('DOMContentLoaded', () => {
+      const b1 = document.getElementById('btnSaveCloud');
+      const b2 = document.getElementById('btnRefreshCloud');
+      if(b1) b1.addEventListener('click', savePlanningToCloud);
+      if(b2) b2.addEventListener('click', refreshCloudList);
+      // auto load list on init
+      refreshCloudList();
+    });
+
+  </script>
+</body>
+</html>

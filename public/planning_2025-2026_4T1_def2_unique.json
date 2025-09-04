@@ -1,0 +1,648 @@
+{
+  "id": "sched_91556a20",
+  "year": "2025-2026",
+  "className": "4T1",
+  "students": [
+    "Aurore"
+  ],
+  "days": [
+    "Lundi",
+    "Mardi",
+    "Mercredi",
+    "Jeudi",
+    "Vendredi"
+  ],
+  "periods": [
+    {
+      "start": "08:00",
+      "end": "08:55"
+    },
+    {
+      "start": "09:00",
+      "end": "09:55"
+    },
+    {
+      "start": "10:05",
+      "end": "11:00"
+    },
+    {
+      "start": "11:05",
+      "end": "12:00"
+    },
+    {
+      "start": "12:05",
+      "end": "12:50"
+    },
+    {
+      "start": "12:55",
+      "end": "13:40"
+    },
+    {
+      "start": "13:45",
+      "end": "14:40"
+    },
+    {
+      "start": "14:45",
+      "end": "15:40"
+    },
+    {
+      "start": "15:50",
+      "end": "16:45"
+    }
+  ],
+  "hasParity": true,
+  "subjects": {
+    "3epgkeh4": {
+      "id": "3epgkeh4",
+      "name": "MATHÉMATIQUES",
+      "short": "MATHS",
+      "color": "#2ecc71",
+      "teacherDefault": "Mme CICOLAZ"
+    },
+    "y9qclv7g": {
+      "id": "y9qclv7g",
+      "name": "FRANÇAIS",
+      "short": "FR",
+      "color": "#db3333",
+      "teacherDefault": "M. OTATA"
+    },
+    "bdplfklp": {
+      "id": "bdplfklp",
+      "name": "ALLEMAND",
+      "short": "DE",
+      "color": "#9b59b6",
+      "teacherDefault": "Mme PORTE"
+    },
+    "ghja5lbn": {
+      "id": "ghja5lbn",
+      "name": "ANGLAIS",
+      "short": "EN",
+      "color": "#16a085",
+      "teacherDefault": "Mme LOEW"
+    },
+    "jir2rp8y": {
+      "id": "jir2rp8y",
+      "name": "HISTOIRE GÉOGRAPHIE",
+      "short": "HG",
+      "color": "#e67e22",
+      "teacherDefault": "M HEISS"
+    },
+    "ooiun5fm": {
+      "id": "ooiun5fm",
+      "name": "SVT",
+      "short": "SVT",
+      "color": "#1abc9c",
+      "teacherDefault": "M. ZALKA"
+    },
+    "1lcovb7w": {
+      "id": "1lcovb7w",
+      "name": "PHYSIQUE-CHIMIE",
+      "short": "PC",
+      "color": "#8e44ad",
+      "teacherDefault": "Mme WOLFF"
+    },
+    "718f9z7v": {
+      "id": "718f9z7v",
+      "name": "TECHNOLOGIE",
+      "short": "TECH",
+      "color": "#357ac0",
+      "teacherDefault": "M REITER"
+    },
+    "2mcfjhvu": {
+      "id": "2mcfjhvu",
+      "name": "EPS",
+      "short": "EPS",
+      "color": "#a39f9f",
+      "teacherDefault": "M FOGLIA"
+    },
+    "j359jv2o": {
+      "id": "j359jv2o",
+      "name": "PE",
+      "short": "PE",
+      "color": "#fcf9f8",
+      "teacherDefault": ""
+    },
+    "m1f6z3od": {
+      "id": "m1f6z3od",
+      "name": "VIE DE CLASSE",
+      "short": "VDC",
+      "color": "#7f8c8d",
+      "teacherDefault": "Mme PORTE"
+    },
+    "x8wb4rib": {
+      "id": "x8wb4rib",
+      "name": "RELIGION",
+      "short": "REL",
+      "color": "#a0522d",
+      "teacherDefault": "Mme GANGLOFF"
+    },
+    "00g5cdjg": {
+      "id": "00g5cdjg",
+      "name": "LATIN",
+      "short": "LAT",
+      "color": "#d35400",
+      "teacherDefault": "Mme FIORITI"
+    },
+    "yx5n1cee": {
+      "id": "yx5n1cee",
+      "name": "MUSIQUE",
+      "short": "MUS",
+      "color": "#ecf750",
+      "teacherDefault": "M. GENDT"
+    },
+    "g5rcvsum": {
+      "id": "g5rcvsum",
+      "name": "ARTS PLASTIQUES",
+      "short": "ARTS",
+      "color": "#e1d937",
+      "teacherDefault": "Mme FRANCE"
+    },
+    "dl2k9sql": {
+      "id": "dl2k9sql",
+      "name": "PAUSE",
+      "short": "PAUSE",
+      "color": "#fcfcfc",
+      "teacherDefault": ""
+    }
+  },
+  "subjectOrder": [
+    "3epgkeh4",
+    "y9qclv7g",
+    "bdplfklp",
+    "ghja5lbn",
+    "jir2rp8y",
+    "ooiun5fm",
+    "1lcovb7w",
+    "718f9z7v",
+    "2mcfjhvu",
+    "j359jv2o",
+    "m1f6z3od",
+    "x8wb4rib",
+    "00g5cdjg",
+    "yx5n1cee",
+    "g5rcvsum",
+    "dl2k9sql"
+  ],
+  "cells": [
+    [
+      {
+        "pair": {
+          "subjectId": "1lcovb7w",
+          "teacher": "Mme WOLFF"
+        },
+        "impair": {
+          "subjectId": "m1f6z3od",
+          "teacher": "Mme PORTE"
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "718f9z7v",
+          "teacher": "M REITER"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": "Mme WOLFF"
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "2mcfjhvu",
+          "teacher": "M FOGLIA"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "2mcfjhvu",
+          "teacher": "M FOGLIA"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "00g5cdjg",
+          "teacher": "Mme FIORITI"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "dl2k9sql",
+          "teacher": ""
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "bdplfklp",
+          "teacher": "Mme PORTE"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "jir2rp8y",
+          "teacher": "M HEISS"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "j359jv2o",
+          "teacher": ""
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      }
+    ],
+    [
+      {
+        "pair": {
+          "subjectId": "3epgkeh4",
+          "teacher": "Mme CICOLAZ"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "ghja5lbn",
+          "teacher": "Mme LOEW"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "jir2rp8y",
+          "teacher": "M HEISS"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "bdplfklp",
+          "teacher": "Mme PORTE"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "dl2k9sql",
+          "teacher": ""
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "dl2k9sql",
+          "teacher": ""
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "y9qclv7g",
+          "teacher": "M. OTATA"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "y9qclv7g",
+          "teacher": "M. OTATA"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "j359jv2o",
+          "teacher": ""
+        },
+        "impair": {
+          "subjectId": "ooiun5fm",
+          "teacher": "M. ZALKA"
+        }
+      }
+    ],
+    [
+      {
+        "pair": {
+          "subjectId": "jir2rp8y",
+          "teacher": "M HEISS"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "x8wb4rib",
+          "teacher": "Mme LOPEZ"
+        },
+        "impair": {
+          "subjectId": "x8wb4rib",
+          "teacher": "Mme GANGLOFF"
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "ghja5lbn",
+          "teacher": "Mme LOEW"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "3epgkeh4",
+          "teacher": "Mme CICOLAZ"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "dl2k9sql",
+          "teacher": ""
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "dl2k9sql",
+          "teacher": ""
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "dl2k9sql",
+          "teacher": ""
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "dl2k9sql",
+          "teacher": ""
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "dl2k9sql",
+          "teacher": ""
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      }
+    ],
+    [
+      {
+        "pair": {
+          "subjectId": "g5rcvsum",
+          "teacher": "Mme FRANCE"
+        },
+        "impair": {
+          "subjectId": "2mcfjhvu",
+          "teacher": "M FOGLIA"
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "y9qclv7g",
+          "teacher": "M. OTATA"
+        },
+        "impair": {
+          "subjectId": "2mcfjhvu",
+          "teacher": "Mme CICOLAZ"
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "ooiun5fm",
+          "teacher": "M. ZALKA"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "ghja5lbn",
+          "teacher": "Mme LOEW"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "dl2k9sql",
+          "teacher": ""
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "dl2k9sql",
+          "teacher": ""
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "3epgkeh4",
+          "teacher": "Mme CICOLAZ"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "bdplfklp",
+          "teacher": "Mme PORTE"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "y9qclv7g",
+          "teacher": "M. OTATA"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      }
+    ],
+    [
+      {
+        "pair": {
+          "subjectId": "bdplfklp",
+          "teacher": "Mme PORTE"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "yx5n1cee",
+          "teacher": "M. GENDT"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "3epgkeh4",
+          "teacher": "Mme CICOLAZ"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "y9qclv7g",
+          "teacher": "M. OTATA"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "00g5cdjg",
+          "teacher": "Mme FIORITI"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "dl2k9sql",
+          "teacher": ""
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "ghja5lbn",
+          "teacher": "Mme LOEW"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "1lcovb7w",
+          "teacher": "Mme WOLFF"
+        },
+        "impair": {
+          "subjectId": "",
+          "teacher": ""
+        }
+      },
+      {
+        "pair": {
+          "subjectId": "718f9z7v",
+          "teacher": "M REITER"
+        },
+        "impair": {
+          "subjectId": "g5rcvsum",
+          "teacher": "Mme FRANCE"
+        }
+      }
+    ]
+  ]
+}
