@@ -777,14 +777,14 @@ window.addEventListener('DOMContentLoaded', function(){
         items.forEach(it => {
           const li = document.createElement('li');
           const niceDate = it.updatedAt ? new Date(it.updatedAt).toLocaleString('fr-FR') : '';
-          li.innerHTML = \`
+          li.innerHTML = `
             <strong>\${it.key}</strong>
             <small style="color:#666">(\${niceDate})</small>
             &nbsp;
             <button data-k="\${it.key}" class="cloud-load">Charger</button>
             <a href="/api/plannings/get?key=\${encodeURIComponent(it.key)}" target="_blank">Télécharger</a>
             <button data-k="\${it.key}" class="cloud-del" style="margin-left:6px;color:#900">Supprimer</button>
-          \`;
+          `;
           ul.appendChild(li);
         });
         // bind
