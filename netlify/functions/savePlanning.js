@@ -1,6 +1,15 @@
-import { getStore } from "@netlify/blobs";
+const { getStore } = require("@netlify/blobs");
 
-export const handler = async (event) => {
+function store(){
+  const siteID = process.env.cc36154d-c4e0-4ede-9976-d91a0bb9b9c8;
+  const token  = process.env.nfp_JgSejZWAKbsnsCCG72Xpr6vq5CFW6A5e22a4;
+  if(!siteID || !token){
+    throw new Error("Missing NETLIFY_SITE_ID or NETLIFY_API_TOKEN in environment variables.");
+  }
+  return getStore({ name: "plannings", siteID, token });
+}
+
+exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200 };
   if (event.httpMethod !== "POST") return { statusCode: 405, body: "Use POST" };
 
@@ -8,14 +17,9 @@ export const handler = async (event) => {
     const { key, data, meta } = JSON.parse(event.body || "{}");
     if (!key || !data) return { statusCode: 400, body: "Missing key or data" };
 
-    const store = getStore({
-	  name: "plannings",
-	  siteID: process.env.cc36154d-c4e0-4ede-9976-d91a0bb9b9c8,
-	  token: process.env.nfp_JgSejZWAKbsnsCCG72Xpr6vq5CFW6A5e22a4,
-	});
+    const s = store();
     const jsonStr = typeof data === "string" ? data : JSON.stringify(data);
-
-    await store.set(key.endsWith(".json") ? key : `${key}.json`, jsonStr, {
+    await s.set(key.endsWith(".json") ? key : `${key}.json`, jsonStr, {
       contentType: "application/json; charset=utf-8",
       metadata: { ...(meta || {}), updatedAt: new Date().toISOString() },
       addRandomSuffix: false
@@ -23,6 +27,6 @@ export const handler = async (event) => {
 
     return { statusCode: 200, body: JSON.stringify({ ok: true, key }) };
   } catch (e) {
-    return { statusCode: 500, body: `save error: ${e.message}` };
+    return { statusCode: 500, body: "save error: " + String(e.message || e) };
   }
 };
