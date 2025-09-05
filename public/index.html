@@ -1,51 +1,65 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Plannings scolaires — Création & Cloud (Netlify Blobs)</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Plannings scolaires — Édition, Cloud & Consultations</title>
   <style>
     :root{
-      --bg:#f5f7fb; --panel:#ffffff; --muted:#5a6a80; --ink:#0a1a2f; --accent:#246bce; --line:#d7e3f3;
-      --ok:#1a7f37; --err:#c12a2a;
+      --bg:#f6f8fc; --panel:#fff; --ink:#0a1a2f; --muted:#5c6b80; --accent:#3164d6;
+      --line:#dbe6f5; --ok:#1a7f37; --err:#c12a2a; --pill:#eef2ff;
     }
-    *{box-sizing:border-box} html,body{height:100%} body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 ui-sans-serif,system-ui,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif}
-    h1{font-size:1.4rem;margin:0 0 .75rem} h2{font-size:1.1rem;margin:0 0 .5rem}
-    .wrap{max-width:1100px;margin:0 auto;padding:24px}
+    *{box-sizing:border-box} html,body{height:100%} body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,Segoe UI,Roboto,"Noto Sans",sans-serif}
+    .wrap{max-width:1160px;margin:0 auto;padding:22px}
+    h1{font-size:1.35rem;margin:0 0 14px}
+    h2{font-size:1.1rem;margin:0 0 8px}
+    .tabs{display:flex;gap:8px;margin:8px 0 18px}
+    .tabbtn{padding:9px 14px;border:1px solid var(--line);background:#f2f6ff;border-radius:999px;cursor:pointer}
+    .tabbtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
     .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 16px}
-    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    input[type="text"]{padding:8px 10px;border:1px solid var(--line);border-radius:10px;min-width:260px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    input[type="text"],input[type="search"]{padding:8px 10px;border:1px solid var(--line);border-radius:10px;min-width:260px}
     button,.btn{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#f2f6ff;cursor:pointer}
-    button:hover{background:#e7efff} .danger{background:#ffecec;border-color:#ffb3b3}
-    .ok{color:var(--ok)} .err{color:var(--err)}
-    code{background:#f3f6fb;padding:2px 6px;border-radius:6px}
-    ul{padding-left:18px} li{margin:6px 0}
-    .pill{display:inline-block;padding:2px 8px;border-radius:999px;background:#eef2ff;margin-left:4px;color:#415680;font-weight:600}
-    .listRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .listRow .spacer{flex:1 1 auto}
-    .muted{color:var(--muted)}
+    button:hover{background:#e7efff}
+    .danger{background:#ffecec;border-color:#ffb3b3}
+    .ok{color:var(--ok)} .err{color:var(--err)} .muted{color:var(--muted)}
     textarea{width:100%;min-height:160px;border:1px solid var(--line);border-radius:12px;padding:10px}
+    ul{padding-left:18px} li{margin:6px 0}
+    .listRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--pill);margin-left:6px;color:#415680;font-weight:600}
+    .spacer{flex:1 1 auto}
+    .split{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
+    @media (max-width:900px){ .split{grid-template-columns:1fr} }
+    .kbd{font:12px/1.2 ui-monospace,Menlo,Consolas,monospace;background:#f3f6fb;border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+    .tag{display:inline-block;padding:2px 6px;border-radius:6px;background:#eef7ea;color:#246b2e;border:1px solid #d4efda;margin-left:6px}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Plannings scolaires — Création & Cloud</h1>
+<div class="wrap">
+  <h1>Plannings scolaires — Édition, Cloud & Consultations</h1>
 
+  <div class="tabs">
+    <button class="tabbtn active" data-tab="build" onclick="switchTab('build', this)">Créer / Cloud</button>
+    <button class="tabbtn" data-tab="consult" onclick="switchTab('consult', this)">Consultations</button>
+  </div>
+
+  <!-- TAB: BUILDER + CLOUD -->
+  <section id="tab-build">
     <div class="card">
       <h2>1) Charger un planning local (JSON)</h2>
       <div class="row">
-        <input type="file" id="localFile" accept="application/json" />
+        <input type="file" id="localFile" accept="application/json"/>
         <button id="btnLoadLocal">Charger dans l’appli</button>
         <span class="muted">ou colle-le ci‑dessous ⤵</span>
       </div>
-      <p class="muted" style="margin:.6rem 0 0">Aperçu brut (modifiable) :</p>
+      <p class="muted" style="margin:.6rem 0 0">Aperçu brut (modifiable) :</p>
       <textarea id="jsonArea" placeholder='Colle ici un JSON de planning, puis clique “Charger dans l’appli”.'></textarea>
     </div>
 
     <div class="card">
       <h2>2) Enregistrer en ligne (Netlify Blobs)</h2>
       <div class="row" style="margin-bottom:.5rem">
-        <input id="cloudName" type="text" placeholder="ex: 2025-2026_4T1_Aurore" />
+        <input id="cloudName" type="text" placeholder="ex: 2025-2026_4T1_Aurore"/>
         <button id="btnSaveCloud">☁️ Enregistrer en ligne</button>
         <button id="btnReloadCloud">↻ Recharger la liste</button>
         <span id="cloudMsg" class="muted"></span>
@@ -57,128 +71,206 @@
       <h2>3) Planning courant (aperçu)</h2>
       <pre id="preview" class="muted" style="white-space:pre-wrap"></pre>
     </div>
-  </div>
+  </section>
+
+  <!-- TAB: CONSULTATIONS -->
+  <section id="tab-consult" style="display:none">
+    <div class="card split">
+      <div>
+        <h2>Consultations — Rechercher & ouvrir</h2>
+        <div class="row" style="margin-bottom:.4rem">
+          <input id="searchBox" type="search" placeholder="Filtrer par nom de fichier…"/>
+          <button id="btnRefreshConsult">↻ Actualiser</button>
+          <span class="muted">Astuce : tape <span class="kbd">2025</span> ou <span class="kbd">4T1</span></span>
+        </div>
+        <ul id="consultList"></ul>
+      </div>
+      <div>
+        <h2>Détails du planning sélectionné</h2>
+        <div id="consultMeta" class="muted">— rien sélectionné —</div>
+        <pre id="consultRaw" class="muted" style="white-space:pre-wrap;margin-top:8px;max-height:48vh;overflow:auto"></pre>
+      </div>
+    </div>
+  </section>
+</div>
 
 <script>
-/* --------------------------- helpers --------------------------- */
-const $ = sel => document.querySelector(sel);
+/* ----------------------- Globals & utils ----------------------- */
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
 const API = {
   list: '/api/plannings',
   save: '/api/plannings/save',
   get:  '/api/plannings/get',
   del:  '/api/plannings/delete'
 };
-
 let currentPlanning = null;
-
 function setMsg(txt, ok=false){
   const el = $("#cloudMsg");
   el.textContent = txt || "";
   el.className = ok ? "ok" : (txt ? "err" : "muted");
   if(!txt) el.classList.add("muted");
 }
+function showPreview(obj){ $("#preview").textContent = obj ? JSON.stringify(obj, null, 2) : "— aucun planning chargé —"; }
 
-function showPreview(obj){
-  $("#preview").textContent = obj ? JSON.stringify(obj, null, 2) : "— aucun planning chargé —";
+/* ---------------------------- Tabs ---------------------------- */
+function switchTab(tab, btn){
+  $("#tab-build").style.display   = (tab === 'build')   ? '' : 'none';
+  $("#tab-consult").style.display = (tab === 'consult') ? '' : 'none';
+  $$(".tabbtn").forEach(b => b.classList.toggle('active', b === btn));
+  if(tab === 'consult'){ refreshConsult(); }
 }
+window.switchTab = switchTab;
 
-/* --------------------------- Local load --------------------------- */
+/* --------------------- Builder: Local load -------------------- */
 $("#btnLoadLocal").addEventListener("click", () => {
-  const area = $("#jsonArea").value.trim();
-  if (area) {
-    try { currentPlanning = JSON.parse(area); showPreview(currentPlanning); setMsg("JSON collé chargé.", true); }
+  const raw = $("#jsonArea").value.trim();
+  if (raw) {
+    try { currentPlanning = JSON.parse(raw); showPreview(currentPlanning); setMsg("JSON collé chargé.", true); }
     catch(e){ setMsg("JSON invalide : " + e.message); }
     return;
   }
-  const file = $("#localFile").files[0];
-  if(!file){ setMsg("Choisis un fichier JSON ou colle-le dans la zone.", false); return; }
+  const f = $("#localFile").files[0];
+  if(!f){ setMsg("Choisis un fichier JSON ou colle-le dans la zone.", false); return; }
   const fr = new FileReader();
   fr.onload = () => {
     try { currentPlanning = JSON.parse(fr.result); showPreview(currentPlanning); setMsg("Fichier JSON chargé.", true); }
     catch(e){ setMsg("JSON invalide : " + e.message); }
   };
-  fr.readAsText(file);
+  fr.readAsText(f);
 });
 
-/* --------------------------- Cloud save --------------------------- */
+/* --------------------- Builder: Save to cloud ----------------- */
 $("#btnSaveCloud").addEventListener("click", async () => {
   try {
     setMsg("");
     const name = ($("#cloudName").value || "").trim();
-    if (!name) return setMsg("Donne un nom de fichier (ex: 2025-2026_4T1_Aurore).");
-    if (!currentPlanning) return setMsg("Aucun planning courant. Charge un JSON (section 1).");
+    if(!name) return setMsg("Donne un nom de fichier (ex: 2025-2026_4T1_Aurore).");
+    if(!currentPlanning) return setMsg("Aucun planning courant. Charge un JSON (section 1).");
 
-    const body = { key: name, data: currentPlanning, meta: { source: "index.html", when: new Date().toISOString() } };
+    const body = { key: name, data: currentPlanning, meta: { source: "ui", when: new Date().toISOString() } };
     const res = await fetch(API.save, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(body) });
     const txt = await res.text();
     if(!res.ok) throw new Error(txt);
     const json = JSON.parse(txt);
     setMsg("Planning enregistré en ligne ✅ (" + json.key + ")", true);
     await loadCloudList();
-  } catch (e) {
-    setMsg("Erreur: " + (e?.message || e));
-  }
+  } catch(e){ setMsg("Erreur: " + (e?.message || e)); }
 });
 
-/* --------------------------- Cloud list --------------------------- */
 $("#btnReloadCloud").addEventListener("click", loadCloudList);
 
 async function loadCloudList(){
-  setMsg("");
-  const cloudList = $("#cloudList");
-  cloudList.innerHTML = '<li class="muted">Chargement…</li>';
+  const ul = $("#cloudList");
+  ul.innerHTML = '<li class="muted">Chargement…</li>';
   try {
-    const res = await fetch(API.list, { cache: "no-store" });
-    const text = await res.text();
-    if(!res.ok) throw new Error(text);
-    const items = JSON.parse(text);
-
-    const markup = items.map(it => {
-      const niceDate = it.updatedAt ? new Date(it.updatedAt).toLocaleString() : "—";
-      const k = it.key;
-      return `
-        <li class="listRow">
-          <span><strong>${k}</strong> <span class="pill">${niceDate}</span></span>
-          <span class="spacer"></span>
-          <button onclick="loadFromCloud('${encodeURIComponent(k)}')">Charger</button>
-          <a class="btn" href="${API.get}?key=${encodeURIComponent(k)}" download>Télécharger</a>
-          <button class="danger" onclick="deleteFromCloud('${encodeURIComponent(k)}')">Supprimer</button>
-        </li>`;
-    }).join("");
-    cloudList.innerHTML = items.length ? markup : '<li class="muted">Aucun planning en ligne pour le moment</li>';
-  } catch(e){
-    cloudList.innerHTML = '<li class="err">Erreur: ' + (e?.message || e) + '</li>';
+    const res = await fetch(API.list, { cache:"no-store" });
+    const txt = await res.text();
+    if(!res.ok) throw new Error(txt);
+    const items = JSON.parse(txt);
+    ul.innerHTML = items.length ? items.map(renderItem).join("") : '<li class="muted">Aucun planning en ligne</li>';
+  } catch(e) {
+    ul.innerHTML = '<li class="err">Erreur: ' + (e?.message || e) + '</li>';
   }
+}
+
+function renderItem(it){
+  const d = it.updatedAt ? new Date(it.updatedAt).toLocaleString() : "—";
+  const k = it.key;
+  return `
+    <li class="listRow">
+      <span><strong>${k}</strong> <span class="pill">${d}</span></span>
+      <span class="spacer"></span>
+      <button onclick="loadFromCloud('${encodeURIComponent(k)}')">Charger</button>
+      <a class="btn" href="${API.get}?key=${encodeURIComponent(k)}" download>Télécharger</a>
+      <button class="danger" onclick="deleteFromCloud('${encodeURIComponent(k)}')">Supprimer</button>
+    </li>`;
 }
 
 window.loadFromCloud = async function(keyEnc){
   try {
-    const url = `${API.get}?key=${keyEnc}`;
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(`${API.get}?key=${keyEnc}`, { cache:"no-store" });
     const txt = await res.text();
     if(!res.ok) throw new Error(txt);
     currentPlanning = JSON.parse(txt);
     showPreview(currentPlanning);
     setMsg("Planning chargé depuis le Cloud ✅", true);
-  } catch(e){
-    setMsg("Erreur de chargement: " + (e?.message || e));
-  }
+  } catch(e){ setMsg("Erreur de chargement: " + (e?.message || e)); }
 };
 
 window.deleteFromCloud = async function(keyEnc){
   if(!confirm("Supprimer ce planning ?")) return;
-  try{
+  try {
     const res = await fetch(API.del, { method:"DELETE", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ key: decodeURIComponent(keyEnc) }) });
     const txt = await res.text();
     if(!res.ok) throw new Error(txt);
     setMsg("Planning supprimé.", true);
     await loadCloudList();
+    await refreshConsult();
+  } catch(e){ setMsg("Erreur suppression: " + (e?.message || e) ); }
+};
+
+/* --------------------- Consultations tab ---------------------- */
+$("#btnRefreshConsult").addEventListener("click", refreshConsult);
+$("#searchBox").addEventListener("input", () => filterConsult());
+
+async function refreshConsult(){
+  const ul = $("#consultList");
+  ul.innerHTML = '<li class="muted">Chargement…</li>';
+  try{
+    const res = await fetch(API.list, { cache:"no-store" });
+    const txt = await res.text();
+    if(!res.ok) throw new Error(txt);
+    const items = JSON.parse(txt);
+    window._consultItems = items;
+    filterConsult();
   }catch(e){
-    setMsg("Erreur suppression: " + (e?.message || e));
+    ul.innerHTML = '<li class="err">Erreur: ' + (e?.message || e) + '</li>';
+  }
+}
+
+function filterConsult(){
+  const ul = $("#consultList");
+  const q = ($("#searchBox").value||"").toLowerCase();
+  const items = (window._consultItems||[]).filter(it => it.key.toLowerCase().includes(q));
+  if(!items.length){ ul.innerHTML = '<li class="muted">Aucun résultat</li>'; return; }
+  ul.innerHTML = items.map(it => {
+    const d = it.updatedAt ? new Date(it.updatedAt).toLocaleString() : "—";
+    const k = it.key;
+    return `
+      <li class="listRow">
+        <span><strong>${k}</strong> <span class="pill">${d}</span></span>
+        <span class="spacer"></span>
+        <button onclick="viewConsult('${encodeURIComponent(k)}')">Voir</button>
+        <a class="btn" href="${API.get}?key=${encodeURIComponent(k)}" target="_blank">Ouvrir</a>
+        <a class="btn" href="${API.get}?key=${encodeURIComponent(k)}" download>Télécharger</a>
+      </li>`;
+  }).join("");
+}
+
+window.viewConsult = async function(keyEnc){
+  const meta = $("#consultMeta"), raw = $("#consultRaw");
+  meta.textContent = "Chargement…"; raw.textContent = "";
+  try{
+    const res = await fetch(`${API.get}?key=${keyEnc}`, { cache:"no-store" });
+    const txt = await res.text();
+    if(!res.ok) throw new Error(txt);
+    const data = JSON.parse(txt);
+    raw.textContent = JSON.stringify(data, null, 2);
+    const year = data.year || data.annee || "—";
+    const cls  = data.className || data.classe || "—";
+    const days = Array.isArray(data.days) ? data.days.length : (Array.isArray(data.jours)? data.jours.length : "—");
+    const subs = data.subjects ? Object.keys(data.subjects).length : (data.matieres ? Object.keys(data.matieres).length : "—");
+    meta.innerHTML = `
+      <div><strong>Année</strong> : ${year} <span class="tag">classe : ${cls}</span></div>
+      <div><strong>Jours</strong> : ${days} • <strong>Matières</strong> : ${subs}</div>
+    `;
+  }catch(e){
+    meta.textContent = "Erreur : " + (e?.message || e);
   }
 };
 
-/* Initial */
+/* Init */
 loadCloudList();
 showPreview(null);
 </script>
