@@ -830,6 +830,64 @@ window.addEventListener('DOMContentLoaded', () => {
   if(btnR || btnS){ cloudList(); }
 });
 
+
+// === Cloud-first autoload (override) =========================================
+// Remplace l'ancienne implémentation : au démarrage, on charge *directement* tous
+// les plannings du Cloud dans la base locale, puis on ouvre l'onglet Consultation.
+async function loadAllPlanningsFromManifest(){
+  try {
+    const listRes = await fetch('/api/plannings', { cache: 'no-store' });
+    if (listRes.ok) {
+      const items = await listRes.json();
+      const keys = (items || []).map(it => it && it.key).filter(k => k && /\.json$/i.test(k));
+      let all = [];
+      for (const key of keys) {
+        try {
+          const r = await fetch(`/api/plannings/get?key=${encodeURIComponent(key)}`, { cache: 'no-store' });
+          if (!r.ok) { console.warn('get failed', key, r.status); continue; }
+          const j = await r.json();
+          if (j && Array.isArray(j.schedules)) all = all.concat(j.schedules);
+          else if (Array.isArray(j))            all = all.concat(j);
+          else if (j && typeof j === 'object')  all.push(j);
+        } catch (e) { console.warn('read error', key, e); }
+      }
+      if (all.length) {
+        // Remplace complètement la base locale par le contenu Cloud
+        saveDB({ schedules: all });
+        populateYears(); populateClasses(); populateStudents(); renderView();
+        if (typeof switchTab === 'function') switchTab('view');
+        return;
+      }
+    }
+  } catch (e) {
+    console.warn('Cloud listing failed:', e);
+  }
+  // Fallback : rien dans le cloud → on garde l’ancien comportement silencieusement (si encore présent).
+  try {
+    const res = await fetch('./plannings.json?ts='+Date.now(), { cache:'no-cache' });
+    if (!res.ok) throw new Error('manifest not found');
+    const data = await res.json();
+    let all = [];
+    const items = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : []);
+    for (const it of items) {
+      if (!it || !it.url) continue;
+      const abs = new URL(it.url, location.href).href;
+      const r = await fetch(abs, { cache:'no-cache' });
+      if (!r.ok) continue;
+      const j = await r.json();
+      if (j && Array.isArray(j.schedules)) all = all.concat(j.schedules);
+      else if (Array.isArray(j))            all = all.concat(j);
+      else if (j && typeof j === 'object')  all.push(j);
+    }
+    if (all.length) {
+      saveDB({ schedules: all });
+      populateYears(); populateClasses(); populateStudents(); renderView();
+      if (typeof switchTab === 'function') switchTab('view');
+    }
+  } catch(_) {}
+}
+// ===========================================================================
+
 </script>
 </body>
 </html>
