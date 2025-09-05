@@ -84,6 +84,34 @@
     .fullscreen .app{max-width:100%;padding:8px}
   
     .timetable th.today-col, .timetable td.today-col{ box-shadow: inset 0 0 0 3px red; }
+
+    /* --- UI tweaks requested --- */
+    .topbar h1{
+      font-size:1.3rem;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .tabs .tab{
+      padding:8px 16px;
+      border-radius:20px;
+      background: var(--accent);
+      color:#fff;
+      font-weight:600;
+      border: none;
+      box-shadow: 0 1px 0 rgba(0,0,0,.06);
+      white-space: nowrap;
+    }
+    .tabs .tab:hover{ filter: brightness(0.95); }
+    .tabs .tab[aria-selected="true"]{ filter: brightness(0.85); }
+    @media (max-width: 768px){
+      .topbar h1{ font-size:1.05rem; }
+      #v-mode{ max-width: 130px; font-size:.9rem; }
+      .tabs{ flex-wrap:nowrap; gap:8px; }
+    }
+    /* Collapsible filter styles */
+    #filter-content.collapsed{ display:none; }
+    #filter-title{ display:flex; align-items:center; gap:8px; }
     
 .hide-online{display:none !important}
 </style>
@@ -178,7 +206,8 @@
     <!-- VIEW -->
     <section id="panel-view" class="grid" style="margin-top:14px">
       <div class="card" id="filter-card">
-        <h2>Filtrer</h2>
+        <h2 id="filter-title" onclick="toggleFilter()" style="cursor:pointer;user-select:none">Filtrer ⯆</h2>
+        <div id="filter-content">
         <div style="display:flex;gap:12px;flex-wrap:wrap">
           <label style="flex:1 1 180px">Année
             <select id="v-year" onchange="populateClasses()"></select>
@@ -204,7 +233,8 @@
             </select>
           </label>
 </div>
-        <div class="toolbar"><div id="date-week" class="hint"></div><button onclick="window.print()">🖨️ Imprimer</button><button onclick="toggleFullscreen()">⤢ Plein écran</button><button class="danger" onclick="deleteCurrentSchedule()">🗑️ Supprimer ce planning</button><button class="danger" onclick="clearLocalDB()">🧹 Vider la base locale</button></div>
+        <div class="toolbar"><div id="date-week" class="hint"></div><button onclick="window.print()">🖨️ Imprimer</button><button onclick="toggleFullscreen()">⤢ Plein écran</button></div>
+        </div>
       </div>
       <div class="card"><div id="view"></div></div>
     </section>
@@ -240,6 +270,17 @@
       }catch(e){ return '#000'; }
     }
     function fmtDateFr(d){ return d.toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); }
+
+    
+    function toggleFilter(){
+      var content = document.getElementById('filter-content');
+      var title = document.getElementById('filter-title');
+      if(!content) return;
+      var collapsed = content.classList.toggle('collapsed');
+      if(title){
+        title.textContent = collapsed ? 'Filtrer ⯈' : 'Filtrer ⯆';
+      }
+    }
 
     // ===== Defaults =====
     const DEFAULT_SUBJECTS = [
