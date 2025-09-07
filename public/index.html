@@ -281,7 +281,6 @@
         title.textContent = collapsed ? 'Filtrer ⯈' : 'Filtrer ⯆';
       }
     }
-
     // ===== Defaults =====
     const DEFAULT_SUBJECTS = [
       ['MATHÉMATIQUES','#2ecc71','', 'MATHS'],
@@ -813,6 +812,7 @@ async function cloudList(){
   }
 }
 
+
 async function cloudLoad(keyEnc){
   try{
     const res = await fetch(`${API.get}?key=${keyEnc}`, { cache: 'no-store' });
@@ -820,23 +820,46 @@ async function cloudLoad(keyEnc){
     if(!res.ok) throw new Error(txt);
     const data = JSON.parse(txt);
 
+    // Normalise en tableau de plannings
+    let imported = [];
+    if (Array.isArray(data?.schedules))      imported = data.schedules;
+    else if (Array.isArray(data))            imported = data;
+    else if (data && typeof data === 'object') imported = [data];
+
+    // Si on est dans l'onglet CRÉER/ÉDITER, remplir directement le formulaire
+    const isCreate = document.getElementById('panel-create').style.display !== 'none';
+    if (isCreate && imported.length){
+      try {
+        if (imported[0].subjects){
+          for (const sid in imported[0].subjects){
+            if (Object.prototype.hasOwnProperty.call(imported[0].subjects, sid)){
+              imported[0].subjects[sid].short = imported[0].subjects[sid].short || '';
+            }
+          }
+        }
+      } catch(_){}
+      model = imported[0];
+      ensureCells();
+      bindModelToCreateUI();
+      setCloudMsg('Planning chargé dans l’éditeur ✅', true);
+      return;
+    }
+
+    // Sinon: on l'ajoute à la base locale côté Consultation
     const db = loadDB();
     const addOne = (s) => {
       if(!s.id) s.id = (Math.random().toString(36).slice(2,10));
-      // éviter doublons exacts par id
       const i = db.schedules.findIndex(x => x.id === s.id);
       if(i>=0) db.schedules[i] = s; else db.schedules.push(s);
     };
-
-    if (Array.isArray(data?.schedules)) {
-      data.schedules.forEach(addOne);
-    } else if (Array.isArray(data)) {
-      data.forEach(addOne);
-    } else if (data && typeof data === 'object') {
-      addOne(data);
-    } else {
-      throw new Error('Format de planning inconnu.');
-    }
+    imported.forEach(addOne);
+    saveDB(db);
+    populateYears(); populateClasses(); populateStudents(); renderView();
+    setCloudMsg('Planning importé depuis le Cloud ✅', true);
+  }catch(e){
+    setCloudMsg('Erreur de chargement: '+(e?.message || e));
+  }
+}
     saveDB(db);
     populateYears(); populateClasses(); populateStudents(); renderView();
     setCloudMsg('Planning importé depuis le Cloud ✅', true);
