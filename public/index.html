@@ -860,13 +860,6 @@ async function cloudLoad(keyEnc){
     setCloudMsg('Erreur de chargement: '+(e?.message || e));
   }
 }
-    saveDB(db);
-    populateYears(); populateClasses(); populateStudents(); renderView();
-    setCloudMsg('Planning importé depuis le Cloud ✅', true);
-  }catch(e){
-    setCloudMsg('Erreur de chargement: '+(e?.message || e));
-  }
-}
 
 async function cloudDelete(keyEnc){
   if(!confirm('Supprimer ce fichier en ligne ?')) return;
